@@ -1,19 +1,29 @@
-import http.server
-import socketserver
 import sys
 import os
+import shutil
 
-PORT = 8000
+APPS_DIR = "apps"
 
-# Get folder from command line
-folder = sys.argv[1]
+if len(sys.argv) < 2:
+    print("Usage: python deploy.py <project-folder>")
+    sys.exit(1)
 
-# Change working directory to the folder
-os.chdir(folder)
+project_path = sys.argv[1]
 
-# Start HTTP server
-handler = http.server.SimpleHTTPRequestHandler
+if not os.path.exists(project_path):
+    print("Error: project folder does not exist")
+    sys.exit(1)
 
-with socketserver.TCPServer(("", PORT), handler) as httpd:
-    print(f"Serving '{folder}' at http://localhost:{PORT}")
-    httpd.serve_forever()
+project_name = os.path.basename(os.path.abspath(project_path))
+
+destination = os.path.join(APPS_DIR, project_name)
+
+if os.path.exists(destination):
+    print(f"Error '{project_name}' is already deployed")
+    sys.exit(1)
+
+shutil.copytree(project_path, destination)
+
+print(f"Deployment successful!")
+print(f"Visit: http://localhost:8000/{project_name}")
+
